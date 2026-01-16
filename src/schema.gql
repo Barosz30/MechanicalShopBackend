@@ -1,0 +1,154 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type ShopItemDetails {
+  id: Int!
+
+  """Producent (np. Shimano)"""
+  manufacturer: String!
+
+  """Materiał (np. Carbon)"""
+  material: String!
+
+  """Waga w kg"""
+  weight: Float!
+
+  """Kolor"""
+  color: String!
+}
+
+type Category {
+  id: Int!
+  name: String!
+  description: String
+  shopItems: [ShopItem!]
+}
+
+type ShopItem {
+  """ID"""
+  id: Int!
+
+  """Name"""
+  name: String!
+
+  """Type"""
+  type: ItemTypes!
+
+  """Price"""
+  price: Int!
+
+  """Description"""
+  description: String
+  isAvailable: Boolean!
+  details: ShopItemDetails
+  category: Category
+}
+
+enum ItemTypes {
+  BIKE
+  PART
+}
+
+type Query {
+  shopItems(filter: GetShopItemsFilterInput): [ShopItem!]!
+  shopItem(id: Int!): ShopItem!
+  categories: [Category!]!
+  category(id: Int!): Category!
+}
+
+input GetShopItemsFilterInput {
+  """Ile elementów pobrać (limit)"""
+  limit: Int! = 10
+
+  """Ile elementów pominąć (offset)"""
+  offset: Int! = 0
+
+  """Wyszukaj po nazwie"""
+  search: String
+
+  """Cena minimalna"""
+  minPrice: Float
+
+  """Cena maksymalna"""
+  maxPrice: Float
+
+  """ID Kategorii"""
+  categoryId: Int
+}
+
+type Mutation {
+  createShopItem(createShopItemInput: CreateShopItemInput!): ShopItem!
+  updateShopItem(updateShopItemInput: UpdateShopItemInput!): ShopItem!
+  removeShopItem(id: Int!): ShopItem!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
+  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
+  removeCategory(id: Int!): Category!
+}
+
+input CreateShopItemInput {
+  """Name"""
+  name: String!
+
+  """Type"""
+  type: ItemTypes!
+
+  """Price"""
+  price: Int!
+
+  """Description"""
+  description: String
+
+  """Czy produkt jest dostępny?"""
+  isAvailable: Boolean = true
+  details: CreateShopItemDetailsInput
+
+  """ID Kategorii do której należy przedmiot"""
+  categoryId: Int
+}
+
+input CreateShopItemDetailsInput {
+  manufacturer: String!
+  material: String!
+  weight: Float!
+  color: String!
+}
+
+input UpdateShopItemInput {
+  """Name"""
+  name: String
+
+  """Type"""
+  type: ItemTypes
+
+  """Price"""
+  price: Int
+
+  """Description"""
+  description: String
+
+  """Czy produkt jest dostępny?"""
+  isAvailable: Boolean = true
+  details: CreateShopItemDetailsInput
+
+  """ID Kategorii do której należy przedmiot"""
+  categoryId: Int
+  id: Int!
+}
+
+input CreateCategoryInput {
+  """Nazwa kategorii"""
+  name: String!
+
+  """Opis kategorii"""
+  description: String
+}
+
+input UpdateCategoryInput {
+  """Nazwa kategorii"""
+  name: String
+
+  """Opis kategorii"""
+  description: String
+  id: Int!
+}
