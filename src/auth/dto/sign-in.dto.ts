@@ -3,7 +3,7 @@ import { IsString, IsNotEmpty } from 'class-validator';
 
 export class SignInDto {
   @ApiProperty({
-    example: 'ash',
+    example: 'Andrzej',
     description: 'Login użytkownika',
   })
   @IsString()

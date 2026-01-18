@@ -3,7 +3,7 @@ import { IsString, MinLength, MaxLength, Matches } from 'class-validator';
 
 export class SignUpDto {
   @ApiProperty({
-    example: 'ash',
+    example: 'Andrzej',
     description: 'Login użytkownika',
   })
   @IsString()
