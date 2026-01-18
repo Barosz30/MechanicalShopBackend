@@ -25,13 +25,14 @@ import { User } from './users/entities/user.entity';
       type: 'postgres',
       url: process.env.DATABASE_URL,
       entities: [ShopItem, ShopItemDetails, Category, User],
-      synchronize: false, // WAŻNE: Na produkcji ustawiamy false. W dev to automatycznie tworzy tabele.
+      synchronize: false,
       ssl: true,
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       playground: false,
+      introspection: true,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     ShopItemsModule,
