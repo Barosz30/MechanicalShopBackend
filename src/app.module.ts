@@ -15,6 +15,9 @@ import { Category } from './categories/entities/category.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { GqlThrottlerGuard } from './auth/guards/gql-throttler.guard';
 
 @Module({
   imports: [
@@ -35,12 +38,26 @@ import { User } from './users/entities/user.entity';
       introspection: true,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
+    }),
     ShopItemsModule,
     CategoriesModule,
     AuthModule,
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: GqlThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
