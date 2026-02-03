@@ -1,37 +1,59 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service'; // Importujemy typ User
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
+import { OAuth2Client } from 'google-auth-library';
+// Jeśli masz wyeksportowaną klasę/interfejs User, warto go tu zaimportować
+// import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
+  private googleClient: OAuth2Client;
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+    this.googleClient = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+    );
+  }
 
-  // Używamy DTO zamiast (username, pass)
-  async signIn(signUpDto: SignUpDto): Promise<{ access_token: string }> {
-    const { username, password } = signUpDto;
-
-    // findOne zwraca Promise<User | undefined>
+  async signIn(signInDto: SignInDto): Promise<{ access_token: string }> {
+    const { username, password } = signInDto;
     const user = await this.usersService.findOne(username);
 
-    // TypeScript: user może być undefined, więc używamy Optional Chaining (?.)
-    // lub sprawdzamy istnienie usera w warunku.
+    // Sprawdzamy usera i hasło
     if (!user || !user.password) {
       throw new UnauthorizedException('Nieprawidłowe dane logowania');
     }
 
-    // Porównujemy hasło podane z hashem w bazie
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       throw new UnauthorizedException('Nieprawidłowe dane logowania');
     }
 
+    // POPRAWKA 1: Używamy metody pomocniczej zamiast kopiować kod
+    return this.generateJwt(user);
+  }
+
+  async signUp(signUpDto: SignUpDto): Promise<void> {
+    const { username, password } = signUpDto;
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    await this.usersService.create(username, hashedPassword);
+  }
+
+  private async generateJwt(user: { id: number; username: string }) {
     const payload = {
       sub: user.id,
       username: user.username,
@@ -41,16 +63,48 @@ export class AuthService {
     };
   }
 
-  // Rejestracja zwraca zazwyczaj Promise<void> lub utworzonego użytkownika
-  async signUp(signInDto: SignInDto): Promise<void> {
-    const { username, password } = signInDto;
+  async verifyGoogleToken(token: string) {
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      return ticket.getPayload();
+    } catch (error) {
+      console.error(error);
+      throw new UnauthorizedException('Błąd weryfikacji tokena Google');
+    }
+  }
 
-    // 1. Generujemy sól
-    const salt = await bcrypt.genSalt();
-    // 2. Haszujemy hasło z solą
-    const hashedPassword = await bcrypt.hash(password, salt);
+  async googleLogin(token: string) {
+    const googlePayload = await this.verifyGoogleToken(token);
 
-    // 3. Przekazujemy hash do serwisu użytkowników
-    await this.usersService.create(username, hashedPassword);
+    if (!googlePayload || !googlePayload.email) {
+      throw new BadRequestException('Token Google nie zawiera adresu email');
+    }
+
+    const email = googlePayload.email;
+
+    let user = await this.usersService.findOne(email);
+
+    if (!user) {
+      const randomPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+      await this.usersService.create(email, hashedPassword);
+
+      user = await this.usersService.findOne(email);
+    }
+
+    if (!user) {
+      throw new InternalServerErrorException(
+        'Błąd podczas tworzenia użytkownika',
+      );
+    }
+
+    return this.generateJwt(user);
   }
 }

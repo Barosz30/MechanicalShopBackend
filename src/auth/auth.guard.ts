@@ -7,10 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-
-interface JwtPayload {
+import { GqlExecutionContext } from '@nestjs/graphql';
+export interface JwtPayload {
   sub: number;
   username: string;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: JwtPayload;
 }
 
 @Injectable()
@@ -21,7 +25,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest() as Request;
+    const request = this.getRequest(context);
 
     const token = this.extractTokenFromHeader(request);
 
@@ -30,18 +34,34 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
+      const secret = this.configService.get<string>('SECRET_KEY');
+
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
-        secret: this.configService.get<string>('JWT_SECRET'),
+        secret: secret,
       });
 
-      request['user'] = payload;
+      request.user = payload;
     } catch {
       throw new UnauthorizedException();
     }
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
+  private getRequest(context: ExecutionContext): AuthenticatedRequest {
+    if (context.getType() === 'http') {
+      return context.switchToHttp().getRequest<AuthenticatedRequest>();
+    }
+
+    const ctx = GqlExecutionContext.create(context);
+
+    const gqlContext = ctx.getContext<{ req: AuthenticatedRequest }>();
+
+    return gqlContext.req;
+  }
+
+  private extractTokenFromHeader(
+    request: AuthenticatedRequest,
+  ): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
