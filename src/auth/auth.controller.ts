@@ -22,12 +22,15 @@ import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { AuthGuard } from './auth.guard';
 import type { AuthenticatedRequest } from './auth.guard';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 class GoogleLoginDto {
   @ApiProperty({
     example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjZm...',
     description: 'Token ID otrzymany od Google (client-side)',
   })
+  @IsString()
+  @IsNotEmpty()
   token: string;
 }
 
