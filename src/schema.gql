@@ -43,6 +43,7 @@ type ShopItem {
   isAvailable: Boolean!
   details: ShopItemDetails
   category: Category
+  imageUrl: String
 }
 
 enum ItemTypes {
