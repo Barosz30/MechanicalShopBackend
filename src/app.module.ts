@@ -18,6 +18,7 @@ import { User } from './users/entities/user.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { GqlThrottlerGuard } from './auth/guards/gql-throttler.guard';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { GqlThrottlerGuard } from './auth/guards/gql-throttler.guard';
     CategoriesModule,
     AuthModule,
     UsersModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [

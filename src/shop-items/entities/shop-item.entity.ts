@@ -52,4 +52,8 @@ export class ShopItem {
     onDelete: 'SET NULL',
   })
   category: Category;
+
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
+  imageUrl?: string;
 }
