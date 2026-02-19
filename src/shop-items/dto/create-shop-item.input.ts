@@ -85,4 +85,9 @@ export class CreateShopItemInput {
   @IsOptional()
   @IsInt()
   categoryId?: number;
+
+  @Field(() => String, { description: 'URL obrazu', nullable: true })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }
