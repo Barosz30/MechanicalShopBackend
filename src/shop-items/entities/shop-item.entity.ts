@@ -2,6 +2,7 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { ItemTypes } from '../../common/enums/item-types.enum';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
   OneToOne,
@@ -40,6 +41,14 @@ export class ShopItem {
   @Field(() => Boolean, { defaultValue: true })
   @Column({ default: true })
   isAvailable: boolean;
+
+  @Field(() => Int, { description: 'Ilość w magazynie (stan)', defaultValue: 0 })
+  @Column({ default: 0 })
+  stock: number;
+
+  @Field(() => Date, { description: 'Data dodania' })
+  @CreateDateColumn()
+  createdAt: Date;
 
   @Field(() => ShopItemDetails, { nullable: true })
   @OneToOne(() => ShopItemDetails, { cascade: true })

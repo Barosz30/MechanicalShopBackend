@@ -18,6 +18,7 @@ export class ShopItemsService {
 
     const item = this.ShopItemsRepository.create({
       ...rest,
+      stock: rest.stock ?? 0,
       details: rest.details ? rest.details : undefined,
       category: categoryId ? { id: categoryId } : undefined,
     });
@@ -28,6 +29,9 @@ export class ShopItemsService {
   }
 
   async findAll(filter: GetShopItemsFilterInput) {
+    const limit = filter.limit ?? 10;
+    const offset = filter.offset ?? 0;
+
     const query = this.ShopItemsRepository.createQueryBuilder('item');
 
     query.leftJoinAndSelect('item.category', 'category');
@@ -42,21 +46,88 @@ export class ShopItemsService {
       );
     }
 
-    if (filter.minPrice) {
+    if (filter.minPrice != null) {
       query.andWhere('item.price >= :minPrice', { minPrice: filter.minPrice });
     }
-    if (filter.maxPrice) {
+    if (filter.maxPrice != null) {
       query.andWhere('item.price <= :maxPrice', { maxPrice: filter.maxPrice });
     }
 
-    if (filter.categoryId) {
+    if (filter.categoryId != null) {
       query.andWhere('category.id = :categoryId', {
         categoryId: filter.categoryId,
       });
     }
 
-    query.take(filter.limit);
-    query.skip(filter.offset);
+    if (filter.minStock != null) {
+      query.andWhere('item.stock >= :minStock', { minStock: filter.minStock });
+    }
+    if (filter.maxStock != null) {
+      query.andWhere('item.stock <= :maxStock', { maxStock: filter.maxStock });
+    }
+
+    if (filter.isAvailable !== undefined && filter.isAvailable !== null) {
+      query.andWhere('item.isAvailable = :isAvailable', {
+        isAvailable: filter.isAvailable,
+      });
+    }
+
+    if (filter.type != null) {
+      query.andWhere('item.type = :type', { type: filter.type });
+    }
+
+    if (filter.manufacturer) {
+      query.andWhere('details.manufacturer ILIKE :manufacturer', {
+        manufacturer: `%${filter.manufacturer}%`,
+      });
+    }
+    if (filter.material) {
+      query.andWhere('details.material ILIKE :material', {
+        material: `%${filter.material}%`,
+      });
+    }
+    if (filter.color) {
+      query.andWhere('details.color ILIKE :color', {
+        color: `%${filter.color}%`,
+      });
+    }
+
+    if (filter.minWeight != null) {
+      query.andWhere('details.weight >= :minWeight', {
+        minWeight: filter.minWeight,
+      });
+    }
+    if (filter.maxWeight != null) {
+      query.andWhere('details.weight <= :maxWeight', {
+        maxWeight: filter.maxWeight,
+      });
+    }
+
+    const sortBy = filter.sortBy ?? 'CREATED_AT';
+    const sortOrder = filter.sortOrder ?? 'DESC';
+    const orderDirection = sortOrder === 'ASC' ? 'ASC' : 'DESC';
+
+    switch (sortBy) {
+      case 'PRICE':
+        query.orderBy('item.price', orderDirection);
+        break;
+      case 'NAME':
+        query.orderBy('item.name', orderDirection);
+        break;
+      case 'STOCK':
+        query.orderBy('item.stock', orderDirection);
+        break;
+      case 'WEIGHT':
+        query.orderBy('details.weight', orderDirection, 'NULLS LAST');
+        break;
+      case 'CREATED_AT':
+      default:
+        query.orderBy('item.createdAt', orderDirection);
+        break;
+    }
+
+    query.take(limit);
+    query.skip(offset);
 
     return await query.getMany();
   }

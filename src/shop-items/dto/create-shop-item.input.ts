@@ -90,4 +90,14 @@ export class CreateShopItemInput {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @Field(() => Int, {
+    description: 'Ilość w magazynie (stan)',
+    nullable: true,
+    defaultValue: 0,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  stock?: number;
 }
