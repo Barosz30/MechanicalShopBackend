@@ -19,7 +19,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { GqlThrottlerGuard } from './auth/guards/gql-throttler.guard';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -53,7 +52,6 @@ import { UploadModule } from './upload/upload.module';
     AuthModule,
     UsersModule,
     CloudinaryModule,
-    UploadModule,
   ],
   controllers: [AppController],
   providers: [
