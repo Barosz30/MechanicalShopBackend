@@ -53,6 +53,7 @@ export class GetShopItemsFilterInput {
 
   @Field(() => Int, { nullable: true, description: 'ID Kategorii' })
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   categoryId?: number;
 
