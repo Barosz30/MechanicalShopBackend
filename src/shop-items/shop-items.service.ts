@@ -72,10 +72,6 @@ export class ShopItemsService {
       });
     }
 
-    if (filter.type != null) {
-      query.andWhere('item.type = :type', { type: filter.type });
-    }
-
     if (filter.manufacturer) {
       query.andWhere('details.manufacturer ILIKE :manufacturer', {
         manufacturer: `%${filter.manufacturer}%`,

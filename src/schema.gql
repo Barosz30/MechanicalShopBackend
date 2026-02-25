@@ -32,9 +32,6 @@ type ShopItem {
   """Name"""
   name: String!
 
-  """Type"""
-  type: ItemTypes!
-
   """Price"""
   price: Int!
 
@@ -44,11 +41,6 @@ type ShopItem {
   details: ShopItemDetails
   category: Category
   imageUrl: String
-}
-
-enum ItemTypes {
-  BIKE
-  PART
 }
 
 type Query {
@@ -91,9 +83,6 @@ input CreateShopItemInput {
   """Name"""
   name: String!
 
-  """Type"""
-  type: ItemTypes!
-
   """Price"""
   price: Int!
 
@@ -118,9 +107,6 @@ input CreateShopItemDetailsInput {
 input UpdateShopItemInput {
   """Name"""
   name: String
-
-  """Type"""
-  type: ItemTypes
 
   """Price"""
   price: Int

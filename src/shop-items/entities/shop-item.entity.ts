@@ -1,5 +1,4 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { ItemTypes } from '../../common/enums/item-types.enum';
 import {
   Column,
   CreateDateColumn,
@@ -22,13 +21,6 @@ export class ShopItem {
   @Field(() => String, { description: 'Name' })
   @Column()
   name: string;
-
-  @Field(() => ItemTypes, { description: 'Type' })
-  @Column({
-    type: 'enum',
-    enum: ItemTypes,
-  })
-  type: ItemTypes;
 
   @Field(() => Int, { description: 'Price' })
   @Column()

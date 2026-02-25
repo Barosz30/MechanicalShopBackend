@@ -2,7 +2,6 @@ import { InputType, Int, Field, Float } from '@nestjs/graphql';
 import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -14,8 +13,6 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { ItemTypes } from 'src/common/enums/item-types.enum';
-
 @InputType()
 export class CreateShopItemDetailsInput {
   @Field(() => String)
@@ -48,10 +45,6 @@ export class CreateShopItemInput {
     typeof value === 'string' ? value.trim() : value,
   )
   name: string;
-
-  @Field(() => ItemTypes, { description: 'Type' })
-  @IsEnum(ItemTypes, { message: 'Niepoprawny typ przedmiotu' })
-  type: ItemTypes;
 
   @Field(() => Int, { description: 'Price' })
   @IsInt({ message: 'Cena musi być liczbą całkowitą' })

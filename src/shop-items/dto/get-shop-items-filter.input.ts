@@ -9,7 +9,6 @@ import {
   IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ItemTypes } from 'src/common/enums/item-types.enum';
 import { SortOrder } from 'src/common/enums/sort-order.enum';
 import { ShopItemSortBy } from 'src/common/enums/shop-item-sort-by.enum';
 
@@ -77,11 +76,6 @@ export class GetShopItemsFilterInput {
   @Type(() => Boolean)
   @IsBoolean()
   isAvailable?: boolean;
-
-  @Field(() => ItemTypes, { nullable: true, description: 'Typ produktu (BIKE / PART)' })
-  @IsOptional()
-  @IsEnum(ItemTypes)
-  type?: ItemTypes;
 
   @Field(() => String, {
     nullable: true,

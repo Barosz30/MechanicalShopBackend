@@ -10,14 +10,9 @@ import { ShopItemsService } from './shop-items.service';
 import { ShopItem } from './entities/shop-item.entity';
 import { CreateShopItemInput } from './dto/create-shop-item.input';
 import { UpdateShopItemInput } from './dto/update-shop-item.input';
-import { ItemTypes } from 'src/common/enums/item-types.enum';
 import { SortOrder } from 'src/common/enums/sort-order.enum';
 import { ShopItemSortBy } from 'src/common/enums/shop-item-sort-by.enum';
 import { GetShopItemsFilterInput } from './dto/get-shop-items-filter.input';
-
-registerEnumType(ItemTypes, {
-  name: 'ItemTypes',
-});
 
 registerEnumType(SortOrder, {
   name: 'SortOrder',

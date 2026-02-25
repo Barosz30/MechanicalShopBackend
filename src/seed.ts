@@ -4,8 +4,6 @@ import { config } from 'dotenv';
 import { ShopItem } from './shop-items/entities/shop-item.entity';
 import { Category } from './categories/entities/category.entity';
 import { ShopItemDetails } from './shop-items/entities/shop-item-details.entity';
-import { ItemTypes } from './common/enums/item-types.enum';
-
 // Ładujemy zmienne środowiskowe (.env)
 config();
 
@@ -63,7 +61,6 @@ async function runSeed() {
       description: faker.commerce.productDescription(),
       price: parseInt(faker.commerce.price({ min: 100, max: 10000 })), // Cena 100-10000
       isAvailable: faker.datatype.boolean(),
-      type: ItemTypes.BIKE,
       category: randomCategory,
       details: {
         color: faker.color.human(),
