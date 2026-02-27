@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Post,
@@ -14,9 +15,15 @@ import { Order } from '@src/orders/entities/order.entity';
 import { OrdersService } from '@src/orders/orders.service';
 import { AuthGuard } from '@src/auth/auth.guard';
 import type { AuthenticatedRequest } from '@src/auth/auth.guard';
+import { IsInt, IsOptional, Min } from 'class-validator';
 
 class CreateCheckoutSessionDto {
+  @IsInt()
   itemId: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
   quantity?: number;
 }
 
@@ -56,7 +63,7 @@ export class PaymentsController {
     });
 
     if (!item) {
-      throw new Error('Przedmiot nie istnieje');
+      throw new BadRequestException('Przedmiot nie istnieje');
     }
 
     const totalAmount = item.price * quantity;
