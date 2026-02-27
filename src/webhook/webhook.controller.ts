@@ -4,9 +4,9 @@ import {
   Post,
   Headers,
   Req,
-  RawBodyRequest,
   BadRequestException,
 } from '@nestjs/common';
+import type { RawBodyRequest } from '@nestjs/common';
 import { Request } from 'express';
 import { WebhookService } from './webhook.service';
 

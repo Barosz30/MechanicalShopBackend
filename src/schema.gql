@@ -38,10 +38,21 @@ type ShopItem {
   """Description"""
   description: String
   isAvailable: Boolean!
+
+  """Ilość w magazynie (stan)"""
+  stock: Int!
+
+  """Data dodania"""
+  createdAt: DateTime!
   details: ShopItemDetails
   category: Category
   imageUrl: String
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type Query {
   shopItems(filter: GetShopItemsFilterInput): [ShopItem!]!
@@ -57,7 +68,7 @@ input GetShopItemsFilterInput {
   """Ile elementów pominąć (offset)"""
   offset: Int! = 0
 
-  """Wyszukaj po nazwie"""
+  """Wyszukaj po nazwie lub opisie"""
   search: String
 
   """Cena minimalna"""
@@ -68,6 +79,49 @@ input GetShopItemsFilterInput {
 
   """ID Kategorii"""
   categoryId: Int
+
+  """Minimalna ilość w magazynie (stan)"""
+  minStock: Int
+
+  """Maksymalna ilość w magazynie (stan)"""
+  maxStock: Int
+
+  """Tylko produkty dostępne (isAvailable = true)"""
+  isAvailable: Boolean
+
+  """Filtr po producencie (ze szczegółów)"""
+  manufacturer: String
+
+  """Filtr po materiale (ze szczegółów)"""
+  material: String
+
+  """Filtr po kolorze (ze szczegółów)"""
+  color: String
+
+  """Minimalna waga w kg (ze szczegółów)"""
+  minWeight: Float
+
+  """Maksymalna waga w kg (ze szczegółów)"""
+  maxWeight: Float
+
+  """Po czym sortować (domyślnie: CREATED_AT)"""
+  sortBy: ShopItemSortBy = CREATED_AT
+
+  """Kierunek sortowania (ASC / DESC)"""
+  sortOrder: SortOrder = DESC
+}
+
+enum ShopItemSortBy {
+  PRICE
+  NAME
+  STOCK
+  WEIGHT
+  CREATED_AT
+}
+
+enum SortOrder {
+  ASC
+  DESC
 }
 
 type Mutation {
@@ -95,6 +149,12 @@ input CreateShopItemInput {
 
   """ID Kategorii do której należy przedmiot"""
   categoryId: Int
+
+  """URL obrazu"""
+  imageUrl: String
+
+  """Ilość w magazynie (stan)"""
+  stock: Int = 0
 }
 
 input CreateShopItemDetailsInput {
@@ -120,6 +180,12 @@ input UpdateShopItemInput {
 
   """ID Kategorii do której należy przedmiot"""
   categoryId: Int
+
+  """URL obrazu"""
+  imageUrl: String
+
+  """Ilość w magazynie (stan)"""
+  stock: Int = 0
   id: Int!
 }
 

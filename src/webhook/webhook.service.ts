@@ -14,9 +14,7 @@ export class WebhookService {
 
   constructor(private readonly ordersService: OrdersService) {
     // Konstruktor Stripe wymaga klucza API, a nie webhooka
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-      apiVersion: '2023-10-16', // Upewnij się, że ta wersja zgadza się z Twoją paczką 'stripe'
-    });
+    this.stripe = new Stripe(process.env.STRIPE_API_SECRET as string);
   }
 
   async processWebhook(rawBody: Buffer, signature: string) {

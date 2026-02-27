@@ -12,7 +12,8 @@ import Stripe from 'stripe';
 import { ShopItem } from '@src/shop-items/entities/shop-item.entity';
 import { Order } from '@src/orders/entities/order.entity';
 import { OrdersService } from '@src/orders/orders.service';
-import { AuthGuard, AuthenticatedRequest } from '@src/auth/auth.guard';
+import { AuthGuard } from '@src/auth/auth.guard';
+import type { AuthenticatedRequest } from '@src/auth/auth.guard';
 
 class CreateCheckoutSessionDto {
   itemId: number;
@@ -31,9 +32,7 @@ export class PaymentsController {
     private readonly ordersRepository: Repository<Order>,
     private readonly ordersService: OrdersService,
   ) {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-      apiVersion: '2023-10-16',
-    });
+    this.stripe = new Stripe(process.env.STRIPE_API_SECRET as string);
     this.frontendUrl =
       process.env.FRONTEND_URL ?? 'http://localhost:4200';
   }
