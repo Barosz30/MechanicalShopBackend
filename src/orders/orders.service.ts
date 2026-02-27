@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
@@ -15,6 +15,17 @@ export class OrdersService {
       { id: orderId },
       { status: 'PAID' },
     );
+  }
+
+  async findOneForUser(orderId: number, userId: number) {
+    const order = await this.ordersRepository.findOne({
+      where: { id: orderId, user: { id: userId } },
+      relations: ['orderItems', 'orderItems.item'],
+    });
+    if (!order) {
+      throw new NotFoundException('Zamówienie nie istnieje');
+    }
+    return order;
   }
 }
 

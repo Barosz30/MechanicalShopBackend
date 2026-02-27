@@ -23,6 +23,7 @@ import { UploadModule } from './upload/upload.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { OrdersModule } from './orders/orders.module';
 import { Order } from './orders/entities/order.entity';
+import { OrderItem } from './orders/entities/order-item.entity';
 import { PaymentsModule } from './payments/payments.module';
 
 @Module({
@@ -33,7 +34,7 @@ import { PaymentsModule } from './payments/payments.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      entities: [ShopItem, ShopItemDetails, Category, User, Order],
+      entities: [ShopItem, ShopItemDetails, Category, User, Order, OrderItem],
       synchronize: false,
       ssl: true,
     }),

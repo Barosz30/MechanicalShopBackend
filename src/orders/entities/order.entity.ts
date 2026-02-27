@@ -2,11 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '@src/users/entities/user.entity';
-import { ShopItem } from '@src/shop-items/entities/shop-item.entity';
+import { OrderItem } from './order-item.entity';
 
 export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED';
 
@@ -18,11 +19,8 @@ export class Order {
   @ManyToOne(() => User, { nullable: false, onDelete: 'CASCADE' })
   user: User;
 
-  @ManyToOne(() => ShopItem, { nullable: false, onDelete: 'RESTRICT' })
-  item: ShopItem;
-
-  @Column({ type: 'int', default: 1 })
-  quantity: number;
+  @OneToMany(() => OrderItem, (oi) => oi.order, { cascade: true })
+  orderItems: OrderItem[];
 
   @Column({ type: 'int' })
   totalAmount: number;
@@ -39,4 +37,3 @@ export class Order {
   @CreateDateColumn()
   createdAt: Date;
 }
-
