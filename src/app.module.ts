@@ -20,6 +20,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { GqlThrottlerGuard } from './auth/guards/gql-throttler.guard';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { UploadModule } from './upload/upload.module';
+import { WebhookModule } from './webhook/webhook.module';
+import { OrdersModule } from './orders/orders.module';
+import { Order } from './orders/entities/order.entity';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -29,7 +33,7 @@ import { UploadModule } from './upload/upload.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      entities: [ShopItem, ShopItemDetails, Category, User],
+      entities: [ShopItem, ShopItemDetails, Category, User, Order],
       synchronize: false,
       ssl: true,
     }),
@@ -54,6 +58,9 @@ import { UploadModule } from './upload/upload.module';
     UsersModule,
     CloudinaryModule,
     UploadModule,
+    WebhookModule,
+    PaymentsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
