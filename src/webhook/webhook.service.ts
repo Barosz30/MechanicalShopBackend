@@ -8,12 +8,10 @@ export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
   private stripe: Stripe;
 
-  // Używamy 'as string', aby zapewnić TS, że zmienna będzie dostępna
-  // (w wersji produkcyjnej warto tu użyć @nestjs/config i ConfigService)
   private readonly endpointSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
   constructor(private readonly ordersService: OrdersService) {
-    // Konstruktor Stripe wymaga klucza API, a nie webhooka
+
     this.stripe = new Stripe(process.env.STRIPE_API_SECRET as string);
   }
 
@@ -27,13 +25,11 @@ export class WebhookService {
         this.endpointSecret,
       );
     } catch (err: unknown) {
-      // Obsługa typu 'unknown' w nowym TypeScripcie
       const errorMessage = err instanceof Error ? err.message : 'Nieznany błąd';
       this.logger.error(`Błąd weryfikacji webhooka: ${errorMessage}`);
       throw new BadRequestException(`Webhook Error: ${errorMessage}`);
     }
 
-    // 2. Obsługa konkretnych typów zdarzeń
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
@@ -55,8 +51,6 @@ export class WebhookService {
   private async handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     this.logger.log(`Płatność zakończona sukcesem dla sesji: ${session.id}`);
 
-    // Zazwyczaj podczas tworzenia sesji płatności przekazujesz ID zamówienia z Twojej bazy 
-    // w polu 'metadata'. Tutaj je odzyskujesz:
     const orderId = session.metadata?.orderId;
 
     if (!orderId) {

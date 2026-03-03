@@ -16,7 +16,9 @@ export class UploadController {
   @Post('image')
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+      // Limit po stronie backendu – Cloudinary na darmowym planie pozwala ~10 MB,
+      // więc ustawiamy bezpiecznie 10 MB na plik.
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
       fileFilter: (_, file, cb) => {
         const allowed = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.originalname);
         if (!allowed) {

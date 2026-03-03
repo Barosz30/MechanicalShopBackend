@@ -8,6 +8,27 @@ import type { AuthenticatedRequest } from '@src/auth/auth.guard';
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
+  @Get()
+  async getUserOrders(@Req() req: AuthenticatedRequest) {
+    const user = req.user;
+    if (!user) {
+      return [];
+    }
+    const orders = await this.ordersService.findAllForUser(user.sub);
+    return orders.map((order) => ({
+      id: order.id,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      createdAt: order.createdAt,
+      items: (order.orderItems ?? []).map((oi) => ({
+        itemName: oi.item?.name ?? '—',
+        quantity: oi.quantity,
+        unitPrice: oi.unitPrice,
+        lineTotal: oi.quantity * oi.unitPrice,
+      })),
+    }));
+  }
+
   @Get(':id')
   async getOrderSummary(
     @Param('id', ParseIntPipe) id: number,

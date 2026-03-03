@@ -1,4 +1,3 @@
-// src/webhook/webhook.controller.ts
 import {
   Controller,
   Post,
@@ -23,7 +22,6 @@ export class WebhookController {
       throw new BadRequestException('Brak sygnatury Stripe');
     }
 
-    // TS wie, że rawBody może być undefined, więc musimy to obsłużyć
     if (!request.rawBody) {
       throw new BadRequestException('Brak surowych danych (rawBody) w żądaniu');
     }

@@ -10,6 +10,14 @@ export class OrdersService {
     private readonly ordersRepository: Repository<Order>,
   ) {}
 
+  async findAllForUser(userId: number) {
+    return this.ordersRepository.find({
+      where: { user: { id: userId } },
+      relations: ['orderItems', 'orderItems.item'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async markOrderPaid(orderId: number): Promise<void> {
     await this.ordersRepository.update(
       { id: orderId },
