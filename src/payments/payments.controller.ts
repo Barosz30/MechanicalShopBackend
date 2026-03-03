@@ -2,6 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
   Post,
   Req,
   UnauthorizedException,
@@ -117,6 +121,67 @@ export class PaymentsController {
         },
         quantity,
       })),
+      metadata: {
+        orderId: order.id.toString(),
+        userId: user.sub.toString(),
+      },
+      success_url: `${this.frontendUrl}/payment-success?orderId=${order.id}`,
+      cancel_url: `${this.frontendUrl}/payment-cancel?orderId=${order.id}`,
+    });
+
+    await this.ordersRepository.update(
+      { id: order.id },
+      { stripeSessionId: session.id },
+    );
+
+    return { url: session.url };
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('create-checkout-session-for-order/:orderId')
+  async createCheckoutSessionForOrder(
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const order = await this.ordersRepository.findOne({
+      where: { id: orderId },
+      relations: ['orderItems', 'orderItems.item', 'user'],
+    });
+    if (!order) {
+      throw new NotFoundException('Zamówienie nie istnieje');
+    }
+    if (order.user.id !== user.sub) {
+      throw new ForbiddenException('To zamówienie nie należy do Ciebie');
+    }
+    if (order.status !== 'PENDING') {
+      throw new BadRequestException(
+        'Płatność możliwa tylko dla zamówień w statusie PENDING',
+      );
+    }
+    if (!order.orderItems?.length) {
+      throw new BadRequestException('Zamówienie nie zawiera pozycji');
+    }
+
+    const lineItems = order.orderItems.map((oi) => ({
+      price_data: {
+        currency: 'pln',
+        product_data: {
+          name: oi.item.name,
+        },
+        unit_amount: oi.unitPrice * 100,
+      },
+      quantity: oi.quantity,
+    }));
+
+    const session = await this.stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: lineItems,
       metadata: {
         orderId: order.id.toString(),
         userId: user.sub.toString(),
