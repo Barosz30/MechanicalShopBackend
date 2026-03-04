@@ -1,16 +1,18 @@
 import { DataSource } from 'typeorm';
 import { faker } from '@faker-js/faker'; // Generator danych
+import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
 import { ShopItem } from './shop-items/entities/shop-item.entity';
 import { Category } from './categories/entities/category.entity';
 import { ShopItemDetails } from './shop-items/entities/shop-item-details.entity';
+import { User } from './users/entities/user.entity';
 // Ładujemy zmienne środowiskowe (.env)
 config();
 
 const dataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [ShopItem, Category, ShopItemDetails], // Musimy podać encje
+  entities: [ShopItem, Category, ShopItemDetails, User],
   synchronize: false,
   ssl: true,
 });
@@ -141,6 +143,20 @@ async function runSeed() {
 
   // Zapisujemy wszystko w jednej paczce (szybciej)
   await shopItemRepo.save(items);
+
+  // 5. Użytkownik demo (dla rekruterów / CV)
+  const userRepo = dataSource.getRepository(User);
+  const demoUsername = 'demo';
+  let demoUser = await userRepo.findOneBy({ username: demoUsername });
+  if (!demoUser) {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash('Demo123!', salt);
+    demoUser = userRepo.create({ username: demoUsername, password: hashedPassword });
+    await userRepo.save(demoUser);
+    console.log('👤 Utworzono konto demo: login "demo", hasło "Demo123!"');
+  } else {
+    console.log('👤 Konto demo już istnieje.');
+  }
 
   console.log(
     `✅ Zakończono! Dodano ${categories.length} kategorii i ${items.length} produktów.`,

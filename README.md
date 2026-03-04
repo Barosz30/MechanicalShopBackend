@@ -23,13 +23,25 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Backend sklepu rowerowego (NestJS, GraphQL, REST, PostgreSQL). Hostowany na Renderze. **Frontend (Angular)** jest w osobnym repozytorium i wdrażany na GitHub Pages.
 
 ## Project setup
 
 ```bash
 $ npm install
 ```
+
+## Seed (kategorie, produkty, użytkownik demo)
+
+```bash
+$ npm run seed
+```
+
+Tworzy kategorie, produkty oraz konto demo: **login** `demo`, **hasło** `Demo123!`. Przydatne dla środowiska demo / rekruterów.
+
+## CORS (frontend na GitHub Pages)
+
+W Renderze ustaw zmienną **CORS_ORIGIN** na URL frontendu, np. `https://twoj-login.github.io` (wiele adresów: oddziel przecinkami).
 
 ## Compile and run the project
 

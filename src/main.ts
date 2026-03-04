@@ -38,7 +38,13 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors();
+  const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean)
+  : true;
+app.enableCors({
+  origin: corsOrigins,
+  credentials: true,
+});
 
   const config = new DocumentBuilder()
     .setTitle('Poke Shop API')
