@@ -38,13 +38,20 @@ async function bootstrap() {
     }),
   );
 
-  const corsOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean)
-  : true;
-app.enableCors({
-  origin: corsOrigins,
-  credentials: true,
-});
+  const fromEnv = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean)
+    : [];
+  const localhost = 'http://localhost:4200';
+  const corsOrigins =
+    fromEnv.length > 0
+      ? fromEnv.includes(localhost)
+        ? fromEnv
+        : [...fromEnv, localhost]
+      : true;
+  app.enableCors({
+    origin: corsOrigins,
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Mechanical Shop API')

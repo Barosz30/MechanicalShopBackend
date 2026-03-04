@@ -39,9 +39,14 @@ $ npm run seed
 
 Tworzy kategorie, produkty oraz konto demo: **login** `demo`, **hasło** `Demo123!`. Przydatne dla środowiska demo / rekruterów.
 
-## CORS (frontend na GitHub Pages)
+## CORS (frontend)
 
-W Renderze ustaw zmienną **CORS_ORIGIN** na URL frontendu, np. `https://twoj-login.github.io` (wiele adresów: oddziel przecinkami).
+W Renderze w serwisie **backendu** ustaw zmienną **CORS_ORIGIN** na URL frontendu, np.:
+
+- `https://mechashopfront.onrender.com` (frontend na Renderze)
+- lub `https://twoj-login.github.io` (frontend na GitHub Pages)
+
+Wiele adresów: oddziel przecinkami, np. `https://mechashopfront.onrender.com,http://localhost:4200`.
 
 ## Compile and run the project
 

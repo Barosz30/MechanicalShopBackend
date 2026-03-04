@@ -15,8 +15,12 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return HTML page with GraphQL and Swagger links', () => {
+      const html = appController.getHello();
+      expect(html).toContain('<!DOCTYPE html>');
+      expect(html).toContain('graphql');
+      expect(html).toContain('api');
+      expect(html).toContain('Swagger');
     });
   });
 });
