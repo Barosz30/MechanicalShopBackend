@@ -47,7 +47,7 @@ app.enableCors({
 });
 
   const config = new DocumentBuilder()
-    .setTitle('Poke Shop API')
+    .setTitle('Mechanical Shop API')
     .setDescription('Dokumentacja API sklepu')
     .setVersion('1.0')
     .addBearerAuth()
