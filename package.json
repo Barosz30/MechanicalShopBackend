@@ -1,8 +1,8 @@
 {
-  "name": "poke-backend",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "name": "Mechanical-Shop-backend",
+  "version": "1.0.0",
+  "description": "Simple backend for Mechanical Shop",
+  "author": "Mirosław Wandyk",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
