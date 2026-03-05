@@ -49,7 +49,7 @@ import { PaymentsModule } from './payments/payments.module';
       throttlers: [
         {
           ttl: 60000,
-          limit: 10,
+          limit: 200, // TODO: tymczasowo zwiększone (było 10)
         },
       ],
     }),
