@@ -31,6 +31,25 @@ Backend sklepu rowerowego (NestJS, GraphQL, REST, PostgreSQL). Hostowany na Rend
 $ npm install
 ```
 
+## Environment setup
+
+Skopiuj plik przykładowy i uzupełnij wartości:
+
+```bash
+cp .env.example .env
+```
+
+Szczególnie ważne dla odzyskiwania hasła:
+
+- `FRONTEND_URL` - adres frontendu, np. `http://localhost:4200`
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` - konfiguracja serwera pocztowego
+
+`FRONTEND_URL` jest źródłem prawdy dla:
+
+- linków resetu hasła
+- redirectów Stripe (`payment-success` / `payment-cancel`)
+- domyślnej listy CORS (gdy `CORS_ORIGIN` nie jest ustawione)
+
 ## Seed (kategorie, produkty, użytkownik demo)
 
 ```bash
@@ -41,7 +60,7 @@ Tworzy kategorie, produkty oraz konto demo: **login** `demo`, **hasło** `Demo12
 
 ## CORS (frontend)
 
-W Renderze w serwisie **backendu** ustaw zmienną **CORS_ORIGIN** na URL frontendu, np.:
+W Renderze w serwisie **backendu** możesz opcjonalnie ustawić **CORS_ORIGIN** (np. gdy masz wiele domen frontendu):
 
 - `https://mechashopfront.onrender.com` (frontend na Renderze)
 - lub `https://twoj-login.github.io` (frontend na GitHub Pages)

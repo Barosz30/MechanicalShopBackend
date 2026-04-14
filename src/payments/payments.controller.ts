@@ -59,8 +59,11 @@ export class PaymentsController {
     private readonly orderItemRepository: Repository<OrderItem>,
   ) {
     this.stripe = new Stripe(process.env.STRIPE_API_SECRET as string);
-    this.frontendUrl =
-      process.env.FRONTEND_URL ?? 'http://localhost:4200';
+    const fromFrontendEnv = process.env.FRONTEND_URL?.trim();
+    const fromCorsEnv = process.env.CORS_ORIGIN?.split(',')
+      .map((v) => v.trim())
+      .filter(Boolean)[0];
+    this.frontendUrl = fromFrontendEnv || fromCorsEnv || 'http://localhost:4200';
   }
 
   @UseGuards(AuthGuard)

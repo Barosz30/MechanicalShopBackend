@@ -35,4 +35,8 @@ export class UsersService {
       throw error;
     }
   }
+
+  async updatePassword(userId: number, passwordHash: string): Promise<void> {
+    await this.usersRepository.update({ id: userId }, { password: passwordHash });
+  }
 }

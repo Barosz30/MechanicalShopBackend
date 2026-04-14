@@ -7,6 +7,7 @@ import {
   UseGuards,
   Get,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 import {
@@ -20,6 +21,9 @@ import {
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from './auth.guard';
 import type { AuthenticatedRequest } from './auth.guard';
 import { IsNotEmpty, IsString } from 'class-validator';
@@ -74,6 +78,33 @@ export class AuthController {
     return this.authService.googleLogin(googleDto.token);
   }
 
+  @ApiOperation({ summary: 'Rozpocznij proces resetu hasła' })
+  @ApiResponse({
+    status: 200,
+    description: 'Zwraca komunikat i wysyła link resetu na email.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  @ApiOperation({ summary: 'Ustaw nowe hasło na podstawie tokenu resetu' })
+  @ApiResponse({
+    status: 200,
+    description: 'Hasło zostało zresetowane.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Nieprawidłowy lub wygasły token resetu.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    await this.authService.resetPassword(resetPasswordDto);
+    return { message: 'Hasło zostało zresetowane' };
+  }
+
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Pobierz profil (wymaga JWT)' })
   @ApiResponse({
@@ -88,5 +119,34 @@ export class AuthController {
   @Get('profile')
   getProfile(@Request() req: AuthenticatedRequest) {
     return req.user;
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Zmiana hasła zalogowanego użytkownika' })
+  @ApiResponse({
+    status: 200,
+    description: 'Hasło zostało zmienione.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Brak tokena lub nieprawidłowe aktualne hasło.',
+  })
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('change-password')
+  async changePassword(
+    @Request() req: AuthenticatedRequest,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    await this.authService.changePassword(
+      user.sub,
+      user.username,
+      changePasswordDto,
+    );
+    return { message: 'Hasło zostało zmienione' };
   }
 }
