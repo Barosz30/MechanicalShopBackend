@@ -47,7 +47,7 @@ class CreateCheckoutSessionDto {
 
 @Controller('api/payments')
 export class PaymentsController {
-  private stripe: Stripe;
+  private stripe: Stripe | null = null;
   private readonly frontendUrl: string;
 
   constructor(
@@ -58,12 +58,25 @@ export class PaymentsController {
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
   ) {
-    this.stripe = new Stripe(process.env.STRIPE_API_SECRET as string);
     const fromFrontendEnv = process.env.FRONTEND_URL?.trim();
     const fromCorsEnv = process.env.CORS_ORIGIN?.split(',')
       .map((v) => v.trim())
       .filter(Boolean)[0];
     this.frontendUrl = fromFrontendEnv || fromCorsEnv || 'http://localhost:4200';
+  }
+
+  private getStripe(): Stripe {
+    if (this.stripe) {
+      return this.stripe;
+    }
+
+    const apiSecret = process.env.STRIPE_API_SECRET;
+    if (!apiSecret) {
+      throw new Error('Missing STRIPE_API_SECRET environment variable');
+    }
+
+    this.stripe = new Stripe(apiSecret);
+    return this.stripe;
   }
 
   @UseGuards(AuthGuard)
@@ -111,7 +124,7 @@ export class PaymentsController {
       await this.orderItemRepository.save(oi);
     }
 
-    const session = await this.stripe.checkout.sessions.create({
+    const session = await this.getStripe().checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: lines.map(({ item, quantity }) => ({
@@ -181,7 +194,7 @@ export class PaymentsController {
       quantity: oi.quantity,
     }));
 
-    const session = await this.stripe.checkout.sessions.create({
+    const session = await this.getStripe().checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: lineItems,

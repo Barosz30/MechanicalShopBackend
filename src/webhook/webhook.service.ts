@@ -6,20 +6,32 @@ import { OrdersService } from '@src/orders/orders.service';
 @Injectable()
 export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
-  private stripe: Stripe;
+  private stripe: Stripe | null = null;
 
   private readonly endpointSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
-  constructor(private readonly ordersService: OrdersService) {
+  constructor(private readonly ordersService: OrdersService) {}
 
-    this.stripe = new Stripe(process.env.STRIPE_API_SECRET as string);
+  private getStripe(): Stripe {
+    if (this.stripe) {
+      return this.stripe;
+    }
+
+    const apiSecret = process.env.STRIPE_API_SECRET;
+    if (!apiSecret) {
+      throw new Error('Missing STRIPE_API_SECRET environment variable');
+    }
+
+    this.stripe = new Stripe(apiSecret);
+    return this.stripe;
   }
 
   async processWebhook(rawBody: Buffer, signature: string) {
     let event: Stripe.Event;
 
     try {
-      event = this.stripe.webhooks.constructEvent(
+      const stripe = this.getStripe();
+      event = stripe.webhooks.constructEvent(
         rawBody,
         signature,
         this.endpointSecret,

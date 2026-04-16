@@ -40,7 +40,8 @@ import { PaymentsModule } from './payments/payments.module';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      // Avoid writing into compiled-only directories on production hosts.
+      autoSchemaFile: join(process.cwd(), 'schema.gql'),
       playground: false,
       introspection: true,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
