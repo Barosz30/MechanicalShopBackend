@@ -44,6 +44,7 @@ import { PaymentsModule } from './payments/payments.module';
       autoSchemaFile: join(process.cwd(), 'schema.gql'),
       playground: false,
       introspection: true,
+      context: ({ req }) => ({ req }),
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     ThrottlerModule.forRoot({
