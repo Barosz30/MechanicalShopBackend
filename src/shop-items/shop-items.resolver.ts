@@ -6,6 +6,7 @@ import {
   Int,
   registerEnumType,
 } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 import { ShopItemsService } from './shop-items.service';
 import { ShopItem } from './entities/shop-item.entity';
 import { CreateShopItemInput } from './dto/create-shop-item.input';
@@ -13,6 +14,7 @@ import { UpdateShopItemInput } from './dto/update-shop-item.input';
 import { SortOrder } from 'src/common/enums/sort-order.enum';
 import { ShopItemSortBy } from 'src/common/enums/shop-item-sort-by.enum';
 import { GetShopItemsFilterInput } from './dto/get-shop-items-filter.input';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 registerEnumType(SortOrder, {
   name: 'SortOrder',
@@ -27,6 +29,7 @@ export class ShopItemsResolver {
   constructor(private readonly shopItemsService: ShopItemsService) {}
 
   @Mutation(() => ShopItem)
+  @UseGuards(AuthGuard)
   createShopItem(
     @Args('createShopItemInput') createShopItemInput: CreateShopItemInput,
   ) {
@@ -48,6 +51,7 @@ export class ShopItemsResolver {
   }
 
   @Mutation(() => ShopItem)
+  @UseGuards(AuthGuard)
   updateShopItem(
     @Args('updateShopItemInput') updateShopItemInput: UpdateShopItemInput,
   ) {
@@ -58,6 +62,7 @@ export class ShopItemsResolver {
   }
 
   @Mutation(() => ShopItem)
+  @UseGuards(AuthGuard)
   removeShopItem(@Args('id', { type: () => Int }) id: number) {
     return this.shopItemsService.remove(id);
   }

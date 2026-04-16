@@ -1,170 +1,330 @@
 import { DataSource } from 'typeorm';
-import { faker } from '@faker-js/faker'; // Generator danych
 import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
 import { ShopItem } from './shop-items/entities/shop-item.entity';
 import { Category } from './categories/entities/category.entity';
 import { ShopItemDetails } from './shop-items/entities/shop-item-details.entity';
 import { User } from './users/entities/user.entity';
-// Ładujemy zmienne środowiskowe (.env)
+import { Order } from './orders/entities/order.entity';
+import { OrderItem } from './orders/entities/order-item.entity';
+
 config();
 
 const dataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [ShopItem, Category, ShopItemDetails, User],
+  entities: [ShopItem, Category, ShopItemDetails, User, Order, OrderItem],
   synchronize: false,
   ssl: true,
 });
 
-async function runSeed() {
-  console.log('🌱 Rozpoczynam sianie danych...');
+const keyboardCategories = [
+  {
+    name: 'Keyboards',
+    description:
+      'Custom mechanical keyboards for premium typing feel, low-latency gaming, and desk setup aesthetics.',
+  },
+  {
+    name: 'Switches',
+    description:
+      'Linear, tactile, and silent switch packs for tuning sound, actuation force, and key feel.',
+  },
+  {
+    name: 'Keycaps',
+    description:
+      'PBT and ABS keycap sets with durable legends, themed colorways, and multiple profile options.',
+  },
+  {
+    name: 'Deskmats',
+    description:
+      'Large-format deskmats with stitched edges and smooth glide to unify keyboard and mouse zones.',
+  },
+  {
+    name: 'Accessories',
+    description:
+      'Cables, lube kits, tools, and small parts that complete and maintain a custom keyboard build.',
+  },
+] as const;
 
-  // 1. Połącz z bazą
+const keyboardProducts = [
+  {
+    name: 'Aurora TKL Pro',
+    category: 'Keyboards',
+    price: 189,
+    stock: 34,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&w=900&q=80',
+    description:
+      'A gasket-mounted tenkeyless board with tri-mode connectivity and a deep, tuned acoustic profile.',
+    details: {
+      manufacturer: 'MechaShop Labs',
+      material: 'Aluminum + Polycarbonate',
+      weight: 1.05,
+      color: 'Midnight Cyan',
+    },
+  },
+  {
+    name: 'Forge65 Alloy',
+    category: 'Keyboards',
+    price: 229,
+    stock: 18,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Compact CNC 65% layout with flex-cut plate, premium heft, and fast wireless switching.',
+    details: {
+      manufacturer: 'MechaShop Labs',
+      material: 'CNC Aluminum',
+      weight: 1.3,
+      color: 'Graphite',
+    },
+  },
+  {
+    name: 'Pulse75 Wireless',
+    category: 'Keyboards',
+    price: 205,
+    stock: 22,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1611078489935-0cb964de46d6?auto=format&fit=crop&w=900&q=80',
+    description:
+      '75% wireless board with OLED controls and foam tuning for smoother, quieter keystrokes.',
+    details: {
+      manufacturer: 'MechaShop Labs',
+      material: 'Aluminum + FR4',
+      weight: 1.12,
+      color: 'Shadow Violet',
+    },
+  },
+  {
+    name: 'Nebula Linear 70-Pack',
+    category: 'Switches',
+    price: 42,
+    stock: 120,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Factory-lubed linear switches with smooth travel and bright, clean bottom-out sound.',
+    details: {
+      manufacturer: 'Keysteel',
+      material: 'POM + Nylon',
+      weight: 0.06,
+      color: 'Frost Lilac',
+    },
+  },
+  {
+    name: 'Atlas Tactile 70-Pack',
+    category: 'Switches',
+    price: 45,
+    stock: 92,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Long-pole tactile switches with pronounced bump for controlled typing feedback.',
+    details: {
+      manufacturer: 'Keysteel',
+      material: 'POM + Polycarbonate',
+      weight: 0.07,
+      color: 'Emerald Mint',
+    },
+  },
+  {
+    name: 'Signal PBT Keycap Set',
+    category: 'Keycaps',
+    price: 89,
+    stock: 40,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Dye-sub PBT set with high-contrast legends and accent keys for custom desk themes.',
+    details: {
+      manufacturer: 'LegendWorks',
+      material: 'Dye-sub PBT',
+      weight: 0.85,
+      color: 'Signal Orange',
+    },
+  },
+  {
+    name: 'Mono Night Keycap Set',
+    category: 'Keycaps',
+    price: 94,
+    stock: 25,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1541140532154-b024d705b90a?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Monochrome textured keycaps with icon modifiers for minimalist productivity builds.',
+    details: {
+      manufacturer: 'LegendWorks',
+      material: 'Textured PBT',
+      weight: 0.88,
+      color: 'Matte Obsidian',
+    },
+  },
+  {
+    name: 'Vector Deskmat',
+    category: 'Deskmats',
+    price: 34,
+    stock: 64,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Large stitched deskmat with smooth speed weave and stable base for keyboard and mouse.',
+    details: {
+      manufacturer: 'DeskGrid',
+      material: 'Cloth + Rubber',
+      weight: 0.52,
+      color: 'Vector Cyan',
+    },
+  },
+  {
+    name: 'Horizon Deskmat',
+    category: 'Deskmats',
+    price: 36,
+    stock: 53,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Wide-format deskmat tuned for low-friction movement and all-day setup comfort.',
+    details: {
+      manufacturer: 'DeskGrid',
+      material: 'Micro-weave Cloth + Rubber',
+      weight: 0.55,
+      color: 'Horizon Teal',
+    },
+  },
+  {
+    name: 'Orbit Coiled Cable',
+    category: 'Accessories',
+    price: 54,
+    stock: 47,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1587202372775-e229f172f2e8?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Detachable coiled USB-C cable with aviator connector and low-memory sleeving.',
+    details: {
+      manufacturer: 'CableForge',
+      material: 'Paracord + PET',
+      weight: 0.18,
+      color: 'Cyan Violet',
+    },
+  },
+  {
+    name: 'Cloud Wrist Rest',
+    category: 'Accessories',
+    price: 39,
+    stock: 30,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1517336714739-489689fd1ca8?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Memory-foam wrist rest with anti-slip base designed for long typing sessions.',
+    details: {
+      manufacturer: 'ComfortKey',
+      material: 'Memory Foam + PU',
+      weight: 0.34,
+      color: 'Slate',
+    },
+  },
+  {
+    name: 'Tune Kit Essentials',
+    category: 'Accessories',
+    price: 24,
+    stock: 72,
+    isAvailable: true,
+    imageUrl:
+      'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=900&q=80',
+    description:
+      'Starter kit with puller, brush, switch opener, and lube station for first-time modding.',
+    details: {
+      manufacturer: 'ModLab',
+      material: 'ABS + Steel',
+      weight: 0.21,
+      color: 'Violet',
+    },
+  },
+] as const;
+
+async function runSeed() {
+  console.log('🌱 Starting keyboard storefront seed...');
+
   await dataSource.initialize();
   const shopItemRepo = dataSource.getRepository(ShopItem);
   const categoryRepo = dataSource.getRepository(Category);
+  const userRepo = dataSource.getRepository(User);
+  const orderRepo = dataSource.getRepository(Order);
+  const orderItemRepo = dataSource.getRepository(OrderItem);
 
-  // 2. Wyczyść stare dane (opcjonalne, ale przydatne)
-  console.log('🧹 Czyszczenie bazy...');
-  // Kolejność ważna: najpierw usuwamy przedmioty, potem kategorie (bo klucz obcy)
+  console.log('🧹 Cleaning existing catalog...');
+  await orderItemRepo.createQueryBuilder().delete().execute();
+  await orderRepo.createQueryBuilder().delete().execute();
   await shopItemRepo.createQueryBuilder().delete().execute();
   await categoryRepo.createQueryBuilder().delete().execute();
 
-  // 3. Stwórz Kategorie (z dopasowanymi zdjęciami i danymi produktów)
-  console.log('📦 Tworzenie kategorii...');
-  const categoriesConfig: {
-    name: string;
-    description: string;
-    imageUrl: string;
-    productNames: string[];
-    productDescriptions: string[];
-  }[] = [
-    {
-      name: 'Rowery MTB',
-      description: 'Pokonuj szlaki bez ograniczeń.',
-      imageUrl: 'https://res.cloudinary.com/dpycpc1op/image/upload/v1772021234/nest-items/xeqaqvbth3o1manzdmla.webp',
-      productNames: ['Rower MTB Trail Pro', 'Rower górski XC 29"', 'Full Suspension Enduro', 'Hardtail MTB 27.5"', 'Rower górski do zjazdu'],
-      productDescriptions: [
-        'Wytrzymały rower górski na szlaki i single track.',
-        'Lekka rama, doskonały do cross-country.',
-        'Amortyzacja przednia i tylna dla wymagających tras.',
-        'Uniwersalny hardtail do codziennej jazdy w terenie.',
-        'Stabilność i kontrola na stromych zjazdach.',
-      ],
-    },
-    {
-      name: 'Rowery Szosowe',
-      description: 'Lekkość i maksymalna prędkość na szosie.',
-      imageUrl: 'https://res.cloudinary.com/dpycpc1op/image/upload/v1772021177/nest-items/amemlppofzc5nwhaqxt6.webp',
-      productNames: ['Rower szosowy Carbon', 'Rower wyścigowy Aero', 'Szosa endurance', 'Rower szosowy do triathlonu', 'Gravel road'],
-      productDescriptions: [
-        'Rama z włókna węglowego, minimalna waga.',
-        'Aerodynamiczna geometria dla maksymalnej prędkości.',
-        'Wygodna pozycja na długie dystanse.',
-        'Geometria triathlonowa, osprzęt do czasówek.',
-        'Uniwersalny rower na asfalt i lekkie tereny.',
-      ],
-    },
-    {
-      name: 'Kaski',
-      description: 'Bezpieczeństwo w dobrym stylu.',
-      imageUrl: 'https://res.cloudinary.com/dpycpc1op/image/upload/v1772022337/nest-items/trhmdundfmxpvmstgx1t.webp?w=400',
-      productNames: ['Kask MTB z osłoną', 'Kask szosowy aerodynamiczny', 'Kask gravel z daszkiem', 'Kask enduro full face', 'Kask miejski'],
-      productDescriptions: [
-        'Ochrona głowy z osłoną na szlaki.',
-        'Lekki, przewiewny kask na szosę.',
-        'Daszek chroniący przed słońcem i błotem.',
-        'Pełna osłona twarzy do ekstremalnej jazdy.',
-        'Stylowy kask do jazdy po mieście.',
-      ],
-    },
-    {
-      name: 'Oświetlenie',
-      description: 'Rozświetl mrok na każdej trasie.',
-      imageUrl: 'https://res.cloudinary.com/dpycpc1op/image/upload/v1772022832/nest-items/spmpttso9ckjdi06ttos.jpg',
-      productNames: ['Latarka czołowa 1000 lumenów', 'Lampka przednia USB', 'Lampka tylna LED', 'Zestaw oświetlenia rowerowego', 'Reflektor dynamo'],
-      productDescriptions: [
-        'Mocne światło do jazdy nocą w terenie.',
-        'Kompaktowa lampka z ładowaniem USB.',
-        'Migające i stałe światło, widoczność z tyłu.',
-        'Przednia i tylna lampa w jednym zestawie.',
-        'Oświetlenie bez baterii, napędzane kołem.',
-      ],
-    },
-    {
-      name: 'Części',
-      description: 'Wszystko, czego potrzebuje Twój rower.',
-      imageUrl: 'https://res.cloudinary.com/dpycpc1op/image/upload/h_300,c_scale/v1772022574/nest-items/r7bj4b2otqlomolka5s1.jpg',
-      productNames: ['Opona MTB 29"', 'Kaseta 12-biegowa', 'Łańcuch 11-speed', 'Szprychy do koła', 'Hamulce tarczowe'],
-      productDescriptions: [
-        'Opona do terenu, doskonała przyczepność.',
-        'Kaseta tylna do napędu 12-biegowego.',
-        'Wytrzymały łańcuch do systemu 11-rzędowego.',
-        'Komplet szprych do budowy lub naprawy koła.',
-        'Hydrauliczne hamulce tarczowe, pewne hamowanie.',
-      ],
-    },
-  ];
-
-  const categories: Category[] = [];
-  for (const { name, description } of categoriesConfig) {
-    const cat = categoryRepo.create({ name, description });
-    await categoryRepo.save(cat);
-    categories.push(cat);
+  console.log('📦 Creating categories...');
+  const savedCategories = new Map<string, Category>();
+  for (const categoryConfig of keyboardCategories) {
+    const createdCategory = categoryRepo.create({
+      name: categoryConfig.name,
+      description: categoryConfig.description,
+    });
+    const savedCategory = await categoryRepo.save(createdCategory);
+    savedCategories.set(savedCategory.name, savedCategory);
   }
 
-  // 4. Stwórz Produkty (nazwa, opis i zdjęcie dopasowane do kategorii)
-  console.log('🚲 Tworzenie produktów...');
-  const items: ShopItem[] = [];
+  console.log('⌨️ Creating shop items...');
+  const createdItems = keyboardProducts.map((productConfig) => {
+    const category = savedCategories.get(productConfig.category);
+    if (!category) {
+      throw new Error(`Missing category ${productConfig.category} while seeding products.`);
+    }
 
-  for (let i = 0; i < 50; i++) {
-    const categoryIndex = faker.helpers.arrayElement(categoriesConfig.map((_, idx) => idx));
-    const category = categories[categoryIndex];
-    const config = categoriesConfig[categoryIndex];
-
-    const item = shopItemRepo.create({
-      name: faker.helpers.arrayElement(config.productNames),
-      description: faker.helpers.arrayElement(config.productDescriptions),
-      price: parseInt(faker.commerce.price({ min: 100, max: 10000 }), 10),
-      isAvailable: faker.datatype.boolean(),
+    return shopItemRepo.create({
+      name: productConfig.name,
+      description: productConfig.description,
+      price: productConfig.price,
+      stock: productConfig.stock,
+      isAvailable: productConfig.isAvailable,
+      imageUrl: productConfig.imageUrl,
       category,
-      imageUrl: config.imageUrl,
       details: {
-        color: faker.color.human(),
-        manufacturer: faker.vehicle.manufacturer(),
-        material: faker.helpers.arrayElement(['Aluminium', 'Carbon', 'Steel']),
-        weight: faker.number.float({ min: 8, max: 15, fractionDigits: 1 }),
+        manufacturer: productConfig.details.manufacturer,
+        material: productConfig.details.material,
+        weight: productConfig.details.weight,
+        color: productConfig.details.color,
       },
     });
+  });
 
-    items.push(item);
-  }
+  await shopItemRepo.save(createdItems);
 
-  // Zapisujemy wszystko w jednej paczce (szybciej)
-  await shopItemRepo.save(items);
-
-  // 5. Użytkownik demo (dla rekruterów / CV)
-  const userRepo = dataSource.getRepository(User);
   const demoUsername = 'demo';
-  let demoUser = await userRepo.findOneBy({ username: demoUsername });
-  if (!demoUser) {
+  const existingDemo = await userRepo.findOneBy({ username: demoUsername });
+  if (!existingDemo) {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash('Demo123!', salt);
-    demoUser = userRepo.create({ username: demoUsername, password: hashedPassword });
+    const demoUser = userRepo.create({ username: demoUsername, password: hashedPassword });
     await userRepo.save(demoUser);
-    console.log('👤 Utworzono konto demo: login "demo", hasło "Demo123!"');
+    console.log('👤 Demo account created: demo / Demo123!');
   } else {
-    console.log('👤 Konto demo już istnieje.');
+    console.log('👤 Demo account already exists.');
   }
 
   console.log(
-    `✅ Zakończono! Dodano ${categories.length} kategorii i ${items.length} produktów.`,
+    `✅ Seed completed. Categories: ${keyboardCategories.length}, products: ${createdItems.length}`,
   );
   await dataSource.destroy();
 }
 
 runSeed().catch((error) => {
-  console.error('❌ Błąd seedowania:', error);
+  console.error('❌ Seed failed:', error);
   process.exit(1);
 });
